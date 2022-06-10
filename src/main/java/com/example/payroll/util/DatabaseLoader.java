@@ -18,8 +18,6 @@ public class DatabaseLoader {
     @Bean
     CommandLineRunner initEmployees(EmployeeRepository repo){
         return args -> {
-            log.info("Loading {}", repo.save(new Employee("Robert", "Engle", "SWE Intern")));
-            log.info("Loading {}", repo.save(new Employee("Rahul", "Vanmali", "MechE")));
 
         };
     }

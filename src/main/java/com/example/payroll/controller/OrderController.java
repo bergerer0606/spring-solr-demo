@@ -26,6 +26,13 @@ public class OrderController {
         return orders;
     }
 
+    @PostMapping("/orders")
+    Order add(@RequestBody Order order){
+        order.setStatus(OrderStatus.IN_PROGRESS);
+        repository.save(order);
+        return order;
+    }
+
     @GetMapping("/orders/{id}")
     Order one(@PathVariable String id){
         Order order = repository.findById(id).orElseThrow(() -> new OrderNotFoundException(id));
@@ -33,7 +40,7 @@ public class OrderController {
         return order;
     }
 
-    @DeleteMapping("/orders/{id}/cancel")
+    @DeleteMapping("/orders/{id}")
     Order cancel(@PathVariable String id){
         Order cancelledOrder = repository.findById(id).map(order -> {
             order.setStatus(OrderStatus.CANCELLED);
@@ -44,7 +51,7 @@ public class OrderController {
         return cancelledOrder;
     }
 
-    @PutMapping("/orders/{id}/complete")
+    @PutMapping("/orders/{id}")
     Order complete(@PathVariable String id){
         return repository.findById(id).map(order -> {
             order.setStatus(OrderStatus.COMPLETED);

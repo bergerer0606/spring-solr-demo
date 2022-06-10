@@ -2,15 +2,15 @@ package com.example.payroll.ex;
 
 public class EmployeeNotFoundException extends RuntimeException{
 
-    public final Long id;
+    public final String id;
 
-    public EmployeeNotFoundException(Long id){
+    public EmployeeNotFoundException(String id){
         super("Cannot find employee with id " + id);
 
         this.id = id;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 }

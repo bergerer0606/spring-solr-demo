@@ -6,10 +6,16 @@ import com.example.payroll.repository.EmployeeRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.mediatype.problem.Problem;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -17,60 +23,65 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 public class EmployeeController {
-    private final EmployeeRepository repo;
-    private final EmployeeModelAssembler assembler;
+    private final EmployeeRepository repository;
 
-    EmployeeController(EmployeeRepository repo, EmployeeModelAssembler assembler){
-        this.repo = repo;
-        this.assembler = assembler;
+    EmployeeController(EmployeeRepository repo){
+        this.repository = repo;
     }
 
     @GetMapping("/employees")
-    CollectionModel<EntityModel<Employee>> all(){
-        List<EntityModel<Employee>> employees = repo.findAll().stream()
-                .map(assembler::toModel)
-                .collect(Collectors.toList());
+    List<Employee> all(){
+        List<Employee> employees = new ArrayList<>();
 
-        return CollectionModel.of(employees, linkTo(methodOn(EmployeeController.class).all()).withSelfRel());
+        repository.findAll().forEach(employees::add);
 
+        return employees;
     }
 
     @PostMapping("/employees")
-    ResponseEntity<?> newEmployee(@RequestBody Employee employee){
-        EntityModel<Employee> entityModel = assembler.toModel(repo.save(employee));
-
-        return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                .body(entityModel);
+    Employee add(@RequestBody Employee employee){
+        return repository.save(employee);
     }
 
     @GetMapping("/employees/{id}")
-    EntityModel<Employee> getEmployee(@PathVariable Long id){
-        Employee employee = repo.findById(id).orElseThrow(() -> new EmployeeNotFoundException(id));
-
-        return assembler.toModel(employee);
+    Employee one(@PathVariable String id){
+        return repository.findById(id).orElseThrow(() -> new EmployeeNotFoundException(id));
     }
+
 
     @PutMapping("/employees/{id}")
-    ResponseEntity<?> replaceEmployee(@RequestBody Employee newEmployee, @PathVariable Long id){
-        Employee updatedEmployee = repo.findById(id).map(employee -> {
+    Employee replace(@RequestBody Employee newEmployee, @PathVariable String id){
+        return repository.findById(id).map(employee -> {
             employee.setName(newEmployee.getName());
             employee.setRole(newEmployee.getRole());
-            return repo.save(employee);
+            return repository.save(employee);
         }).orElseGet(() -> {
             newEmployee.setId(id);
-            return repo.save(newEmployee);
+            return repository.save(newEmployee);
         });
-
-        EntityModel<Employee> model = assembler.toModel(updatedEmployee);
-
-        return ResponseEntity.created(model.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                .body(model);
     }
+
 
     @DeleteMapping("/employees/{id}")
-    ResponseEntity<?> deleteEmployee(@PathVariable Long id){
-        repo.deleteById(id);
-
-        return ResponseEntity.noContent().build();
+    Employee delete(@PathVariable String id){
+        return repository.findById(id).map(employee -> {
+            repository.delete(employee);
+            return employee;
+        }).orElseThrow(() -> new EmployeeNotFoundException(id));
     }
+
+    @GetMapping("/employees/find")
+    List<Employee> find(@RequestParam Optional<String> firstName, @RequestParam Optional<String> lastName){
+        if(firstName.isPresent() && lastName.isPresent())
+            return repository.findEmployeesByFirstNameAndLastName(firstName.get(), lastName.get());
+
+        if(firstName.isPresent())
+            return repository.findEmployeesByFirstName(firstName.get());
+
+        if(lastName.isPresent())
+            return repository.findEmployeesByLastName(lastName.get());
+
+        throw new EmployeeNotFoundException("");
+    }
+
 }

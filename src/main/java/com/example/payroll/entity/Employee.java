@@ -1,20 +1,31 @@
 package com.example.payroll.entity;
 
-import javax.persistence.*;
+import org.apache.solr.client.solrj.beans.Field;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.solr.core.mapping.SolrDocument;
+
 import java.util.Objects;
 
-@Entity
+@SolrDocument
 public class Employee {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id", nullable = false)
-    private Long id;
+    @Field
+    private String id;
+    @Field
     private String firstName;
+    @Field
     private String lastName;
-
+    @Field
     private String role;
 
     public Employee(){}
+
+    public Employee(String name, String role){
+        String[] names = name.split(" ");
+        this.firstName = names[0];
+        this.lastName = names[1];
+        this.role = role;
+    }
 
     public Employee(String firstName, String lastName, String role){
         this.firstName = firstName;
@@ -22,7 +33,7 @@ public class Employee {
         this.role = role;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
@@ -60,7 +71,7 @@ public class Employee {
         this.role = role;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
