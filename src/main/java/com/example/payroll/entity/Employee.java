@@ -17,7 +17,6 @@ public class Employee {
     private String lastName;
     @Field
     private String role;
-
     public Employee(){}
 
     public Employee(String name, String role){
