@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
 public class MovieServiceTest {
@@ -80,19 +81,33 @@ public class MovieServiceTest {
 
         List<Movie> carsMovieList = List.of(movie3, movie4);
 
-        Page<Movie> moviePage = new PageImpl<>(carsMovieList,
+        Page<Movie> carsMoviePage = new PageImpl<>(carsMovieList,
                 PageRequest.of(0, 10), carsMovieList.size());
+        Page<Movie> planesMoviePage = new PageImpl<>(List.of(movie5),
+                PageRequest.of(0, 10), 1L);
 
-        Mockito.when(repository.findAllByTitleIgnoreCase(any(), pagingCaptor.capture())).thenReturn(moviePage);
+        Mockito.when(repository.findAllByTitleIgnoreCase(eq("planes"), pagingCaptor.capture())).thenReturn(planesMoviePage);
+        Mockito.when(repository.findAllByTitleIgnoreCase(eq("cars"), pagingCaptor.capture())).thenReturn(carsMoviePage);
 
         //when
-        Page<Movie> returnedMovies = service.byTitle("cars", 0, 10);
+        Page<Movie> planesReturnedMovies = service.byTitle("planes", 0, 10);
+        Page<Movie> carsReturnedMovies = service.byTitle("cars", 0, 10);
 
         //then
+
+        //Query for cars should only contain elements for cars
         Assertions.assertThat(
-                returnedMovies.stream()
+                carsReturnedMovies.stream()
                         .filter(movie -> !carsMovieList.contains(movie))
                         .count()
         ).isEqualTo(0);
+
+        //Query for planes should not contain elements from query for cars
+        Assertions.assertThat(
+                planesReturnedMovies.stream()
+                        .filter(movie -> !carsMovieList.contains(movie))
+                        .count()
+        ).isNotEqualTo(0);
+
     }
 }
