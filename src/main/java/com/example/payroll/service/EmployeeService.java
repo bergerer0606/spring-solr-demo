@@ -8,17 +8,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 public class EmployeeService {
 
     private final EmployeeRepository repository;
+
+    public Page<Employee> all(){
+        return all(0, 10);
+    }
 
     public Page<Employee> all(int page, int size){
         Pageable paging = PageRequest.of(page, size);

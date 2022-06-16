@@ -61,7 +61,7 @@ public class MovieServiceTest {
     }
 
     @Test
-    void testByTitle(){
+    void testByTitleCorrect(){
         //given
         Movie movie1 = new Movie("1", "Toy Story", "", "A toy lol",
                 "released", new Date(), 100000L,
@@ -101,6 +101,43 @@ public class MovieServiceTest {
                         .filter(movie -> !carsMovieList.contains(movie))
                         .count()
         ).isEqualTo(0);
+    }
+
+    @Test
+    public void testByTitleIncorrect(){
+        //given
+        Movie movie1 = new Movie("1", "Toy Story", "", "A toy lol",
+                "released", new Date(), 100000L,
+                1000L, 120.0, "Disney");
+        Movie movie2 = new Movie("2", "Toy Story 2", "", "A toy lol",
+                "released", new Date(), 111111L,
+                1000000L, 160.0, "Disney");
+        Movie movie3 = new Movie("3", "Cars", "", "A car lol",
+                "released", new Date(), 99999L,
+                9999999L, 120.0, "Pixar?");
+        Movie movie4 = new Movie("4", "Cars 2", "", "Another cars movie",
+                "released", new Date(), 9999L,
+                99999L, 100.0, "Pixar?");
+        Movie movie5 = new Movie("5", "Planes", "", "A planes movie",
+                "released", new Date(), 99999L,
+                9999999L, 120.0, "Pixar?");
+
+        List<Movie> carsMovieList = List.of(movie3, movie4);
+
+        Page<Movie> carsMoviePage = new PageImpl<>(carsMovieList,
+                PageRequest.of(0, 10), carsMovieList.size());
+        Page<Movie> planesMoviePage = new PageImpl<>(List.of(movie5),
+                PageRequest.of(0, 10), 1L);
+
+        Mockito.when(repository.findAllByTitleIgnoreCase(eq("planes"), pagingCaptor.capture())).thenReturn(planesMoviePage);
+        Mockito.when(repository.findAllByTitleIgnoreCase(eq("cars"), pagingCaptor.capture())).thenReturn(carsMoviePage);
+
+        //when
+        Page<Movie> planesReturnedMovies = service.byTitle("planes", 0, 10);
+        Page<Movie> carsReturnedMovies = service.byTitle("cars", 0, 10);
+
+        //then
+
 
         //Query for planes should not contain elements from query for cars
         Assertions.assertThat(
@@ -108,6 +145,5 @@ public class MovieServiceTest {
                         .filter(movie -> !carsMovieList.contains(movie))
                         .count()
         ).isNotEqualTo(0);
-
     }
 }

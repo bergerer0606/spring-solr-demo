@@ -1,5 +1,8 @@
 package com.example.payroll.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.apache.solr.client.solrj.beans.Field;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.solr.core.mapping.SolrDocument;
@@ -7,6 +10,9 @@ import org.springframework.data.solr.core.mapping.SolrDocument;
 import java.util.Objects;
 
 @SolrDocument
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Employee {
     @Id
     @Field
@@ -17,13 +23,11 @@ public class Employee {
     private String lastName;
     @Field
     private String role;
-    public Employee(){}
 
     public Employee(String name, String role){
-        String[] names = name.split(" ");
-        this.firstName = names[0];
-        this.lastName = names[1];
-        this.role = role;
+        String[] names = name.split(" " );
+        firstName = names[0];
+        lastName = names[1];
     }
 
     public Employee(String firstName, String lastName, String role){
@@ -32,68 +36,13 @@ public class Employee {
         this.role = role;
     }
 
-    public String getId() {
-        return id;
-    }
-
     public String getName() {
         return firstName + " " + lastName;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
     }
 
     public void setName(String name) {
         String[] names = name.split(" ");
         this.firstName = names[0];
         this.lastName = names[1];
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Employee employee = (Employee) o;
-        return id.equals(employee.id) && Objects.equals(firstName, employee.firstName) && Objects.equals(lastName, employee.lastName);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, firstName, lastName);
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("Employee{");
-        sb.append("firstName='").append(firstName).append('\'');
-        sb.append(", lastName='").append(lastName).append('\'');
-        sb.append(", role='").append(role).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
 }
